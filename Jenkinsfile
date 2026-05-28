@@ -27,6 +27,7 @@ pipeline
                 script {
                     echo "Desplegando usando el tag: ${env.BUILD_TAG_CUSTOM}"
                     echo "Versión tag: ${env.VERSION}"
+                    ls -l
                 }
             }
         }

@@ -55,9 +55,15 @@ pipeline {
                     steps {
                         script {
                             def prefix = "\u001B[31m[ERROR]\u001B[0m"
-                            echo "${prefix} Esta rama fallará intencionadamente"
-                            sleep 2
-                            error("${prefix} Fallo intencional en procesamiento")
+                            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                // catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE')
+                                echo "${prefix} Esta rama fallará intencionadamente"
+                                sleep 2
+                                // Error real
+                                error("${prefix} Fallo intencional en procesamiento")
+                            }
+                
+                            echo "${prefix} El error ha sido capturado, el pipeline continúa"
                         }
                     }
                 }

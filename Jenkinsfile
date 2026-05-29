@@ -1,35 +1,86 @@
-pipeline 
-{
+pipeline {
     agent any
+    options {
+        ansiColor('xterm') // Habilita colores ANSI
+        timestamps()       // Opcional: añade timestamps a logs
+    }
     stages {
-        stage('Generate Value') {
+        stage('Preparación') {
             steps {
                 script {
-                    // Generamos un valor dinámico (ejemplo: timestamp)
-                    env.BUILD_TAG_CUSTOM = "build-${new Date().format('yyyyMMddHHmmss')}"
-                    echo "Valor generado: ${env.BUILD_TAG_CUSTOM}"
-                    env.VERSION = "1.0.${env.BUILD_NUMBER}"
+                    echo "\u001B[34m[PREPARACIÓN] Iniciando preparación del entorno...\u001B[0m"
+                }
+                sh 'ls -la'
+            }
+        }
+        stage('Procesamiento en paralelo') {
+            parallel {
+                stage('datos1.txt') {
+                    steps {
+                        script {
+                            def prefix = "\u001B[32m[datos1]\u001B[0m"
+                            echo "${prefix} Procesando datos1.txt"
+                            sh "cat datos1.txt"
+                            echo "${prefix} Simulando procesamiento pesado..."
+                            sleep 5
+                            echo "${prefix} Procesamiento finalizado"
+                        }
+                    }
+                }
+                stage('Datos2.txt') {
+                    steps {
+                        script {
+                            def prefix = "\u001B[33m[Datos2]\u001B[0m"
+                            echo "${prefix} Procesando Datos2.txt"
+                            sh "cat Datos2.txt"
+                            echo "${prefix} Simulando procesamiento pesado..."
+                            sleep 5
+                            echo "${prefix} Procesamiento finalizado"
+                        }
+                    }
+                }
+                stage('datos3.txt') {
+                    steps {
+                        script {
+                            def prefix = "\u001B[36m[datos3]\u001B[0m"
+                            echo "${prefix} Procesando datos3.txt"
+                            sh "cat datos3.txt"
+                            echo "${prefix} Simulando procesamiento pesado..."
+                            sleep 5
+                            echo "${prefix} Procesamiento finalizado"
+                        }
+                    }
+                }
+                stage('Rama con error') {
+                    steps {
+                        script {
+                            def prefix = "\u001B[31m[ERROR]\u001B[0m"
+                            echo "${prefix} Esta rama fallará intencionadamente"
+                            sleep 2
+                            error("${prefix} Fallo intencional en procesamiento")
+                        }
+                    }
                 }
             }
         }
-
-        stage('Use Value') {
+        stage('Resumen') {
             steps {
                 script {
-                    // Reutilizamos la variable generada en la stage anterior
-                    echo "Reutilizando el valor en otra stage: ${env.BUILD_TAG_CUSTOM}"
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    echo "Desplegando usando el tag: ${env.BUILD_TAG_CUSTOM}"
-                    echo "Versión tag: ${env.VERSION}"
-                    ls -l
+                    echo "\u001B[35m[RESUMEN] Todos los procesos en paralelo han terminado (algunos pueden haber fallado).\u001B[0m"
                 }
             }
         }
     }
+    post {
+        failure {
+            echo "\u001B[31m[POST] El pipeline ha fallado debido a errores en alguna rama.\u001B[0m"
+        }
+        success {
+            echo "\u001B[32m[POST] Pipeline completado correctamente.\u001B[0m"
+        }
+        always {
+            echo "\u001B[36m[POST] Ejecución finalizada.\u001B[0m"
+        }
+    }
 }
+
